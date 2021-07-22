@@ -25,8 +25,9 @@ import ../src/bun
 #  
 #  echo "suite teardown: run once after the tests"
 
-suite "Different file contents":
+suite "Basics":
 
   test "if no matching file is found, return default.yaml":
-    doAssert hello(5) == 9
-  
+    #doAssert hello(5) == 9
+
+    doAssert main("nonexistent.fqdn") == "---\nenvironment: production"
