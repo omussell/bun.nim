@@ -27,7 +27,19 @@ import ../src/bun
 
 suite "Basics":
 
-  test "if no matching file is found, return default.yaml":
-    #doAssert hello(5) == 9
+  #test "if no matching file is found, return default.yaml":
+  #  #doAssert hello(5) == 9
 
-    doAssert main("nonexistent.fqdn") == "---\nenvironment: production"
+  #  doAssert main("nonexistent.fqdn") == "---\nenvironment: production"
+  test "fqdn is split into tokens correctly":
+    doAssert getTokens("testfqdn") == @["testfqdn"]
+    doAssert getTokens("test-fqdn") == @["test", "fqdn"]
+    doAssert getTokens("test-fqdn.com") == @["test", "fqdn", "com"]
+
+  test "file for fqdn is found":
+    doAssert findMatch(@["testfqdn"]) == "/home/oem/bun.nim/nodes/testfqdn.yaml"
+    doAssert findMatch(@["test", "fqdn"]) == "/home/oem/bun.nim/nodes/test-fqdn.yaml"
+    doAssert findMatch(@["test", "fqdn", "com"]) == "/home/oem/bun.nim/nodes/test-fqdn-com.yaml"
+
+  test "file for fqdn is not found":
+    doAssert findMatch(@["nonexistent", "fqdn"]) == "/home/oem/bun.nim/nodes/default.yaml"
