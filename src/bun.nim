@@ -1,8 +1,13 @@
 ## This module takes a FQDN as input and returns the contents of the matching YAML file.
 ##
-## Dont actually need the yaml library because we are just dumping the whole file contents without reading them. we only care about matching the fqdn tokens to the matching file name.
+## This is intended to be used as an External Node Classifier with Puppet. It is invoked
+## with the FQDN of the node as the first positional parameter given to the binary. 
+## Bun then returns the contents of the YAML file which matches that given FQDN. 
+##
+## It finds the file by splitting the FQDN on `.` and `-`, joining the tokens with `-`, 
+## and then removing each token from right to left until it finds a matching file name.
 
-import parseopt, strutils, sequtils, os
+import parseopt, strutils, os
 
 proc writeHelp() = echo """
   bun fqdn
@@ -32,6 +37,10 @@ for kind, key, val in args.getopt():
     of cmdEnd: break
 
 proc getTokens*(fqdn: string): seq[string] =
+  ## Splits the FQDN into tokens. Splits on `.` and `-`.
+  ## Most server names use both periods and hyphens, for 
+  ## example, test-server.example.com. This would be split into
+  ## `@["test", "server", "example", "com"]`
   var split_domains = fqdn.split(".")
   var split_tokens: seq[string]
   for token in split_domains:
@@ -40,6 +49,18 @@ proc getTokens*(fqdn: string): seq[string] =
   return result
 
 proc findMatch*(tokens: seq[string]): string =
+  ## Iterates over the tokens to find the first matching
+  ## file. Works from right to left, so `@["test", "server", "example", "com"]`
+  ## looks for the following files in order:
+  ##
+  ## ```
+  ## - test-server-example-com.yaml
+  ## - test-server-example.yaml
+  ## - test-server.yaml
+  ## - test.yaml
+  ## ```
+  ##
+  ## If a file isnt found, it instead returns `default.yaml`
   var check_tokens = tokens
   while check_tokens.len > 0:
     var check_file: string = config_path & "nodes/" & join(check_tokens, "-") & ".yaml"
@@ -50,10 +71,7 @@ proc findMatch*(tokens: seq[string]): string =
   var default_file: string = config_path & "nodes/default.yaml"
   return default_file
 
-proc hello*(num: int): int =
-  result = num + 4
-
-proc main*(fqdn: string) =
+proc main(fqdn: string) =
   var tokens = getTokens(fqdn)
   var matched = findMatch(tokens)
   echo matched
