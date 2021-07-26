@@ -6,7 +6,21 @@
 ##
 ## It finds the file by splitting the FQDN on `.` and `-`, joining the tokens with `-`, 
 ## and then removing each token from right to left until it finds a matching file name.
-
+##
+## So for example, given the node name of `test-server.example.com`, bun is invoked with
+## `bun test-server.example.com`. Bun will split the FQDN to become 
+## `@["test", "server", "example", "com"]`. This is then joined together with hyphens `-` 
+## and the following file paths tested.
+##
+## ```
+## - /etc/puppetlabs/puppet/bun.nim/nodes/test-server-example-com.yaml
+## - /etc/puppetlabs/puppet/bun.nim/nodes/test-server-example.yaml
+## - /etc/puppetlabs/puppet/bun.nim/nodes/test-server.yaml
+## - /etc/puppetlabs/puppet/bun.nim/nodes/test.yaml
+## ```
+##
+## Each of those file paths are tested in turn until bun finds an existing file and returns 
+## its contents. Otherwise, the contents of the default.yaml file is returned.
 import parseopt, strutils, os
 
 proc writeHelp() = echo """
