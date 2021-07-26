@@ -4,12 +4,22 @@
 
 import parseopt, strutils, sequtils, os
 
-proc writeHelp() = echo "get help"
+proc writeHelp() = echo """
+  bun fqdn
+
+  bun testserver.example.com
+
+  returns:
+
+  ---
+  environment: production
+  """
 
 proc writeVersion() = echo "1.0.0"
 
 var args: OptParser = initOptParser()
 var fqdn: string
+var config_path: string = "/etc/puppetlabs/puppet/bun.nim/"
 
 for kind, key, val in args.getopt():
     case kind
@@ -32,21 +42,20 @@ proc getTokens*(fqdn: string): seq[string] =
 proc findMatch*(tokens: seq[string]): string =
   var check_tokens = tokens
   while check_tokens.len > 0:
-    var check_file: string = "/home/oem/bun.nim/nodes/" & join(check_tokens, "-") & ".yaml"
+    var check_file: string = config_path & "nodes/" & join(check_tokens, "-") & ".yaml"
     if fileExists(check_file):
       return check_file
     else:
       var check_tokens = check_tokens.pop
-  return "/home/oem/bun.nim/nodes/default.yaml"
+  var default_file: string = config_path & "nodes/default.yaml"
+  return default_file
 
 proc hello*(num: int): int =
   result = num + 4
 
 proc main*(fqdn: string) =
-  #result = "---\nenvironment: production"
   var tokens = getTokens(fqdn)
   var matched = findMatch(tokens)
-  let nodeFile = readFile("/home/oem/bun.nim/nodes/default.yaml")
-  echo nodeFile
+  echo matched
 
 main(fqdn)
