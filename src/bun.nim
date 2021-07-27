@@ -38,7 +38,7 @@ proc writeVersion() = echo "1.0.0"
 
 var args: OptParser = initOptParser()
 var fqdn: string
-var config_path: string = "/etc/puppetlabs/puppet/bun.nim/"
+var config_path: string = "/etc/puppetlabs/bun.nim/"
 
 for kind, key, val in args.getopt():
     case kind
