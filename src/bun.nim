@@ -88,6 +88,7 @@ proc findMatch*(tokens: seq[string]): string =
 proc main(fqdn: string) =
   var tokens = getTokens(fqdn)
   var matched = findMatch(tokens)
-  echo matched
+  let nodeFile = readFile(matched)
+  echo nodeFile
 
 main(fqdn)
